@@ -1,0 +1,42 @@
+{
+  "default": {
+    "fg": "#FFFFFF",
+    "bg": "#000000",
+    "image": "assets/images/default.png"
+  },
+  "Valentine's Day": {
+    "fg": "#FFB7C5",
+    "bg": "#A80030",
+    "image": "assets/images/valentines.png"
+  },
+  "Saint Patrick's Day": {
+    "fg": "#FFFFFF",
+    "bg": "#006400",
+    "image": "assets/images/st_patrick.png"
+  },
+  "Halloween": {
+    "fg": "#FFA500",
+    "bg": "#000000",
+    "image": "assets/images/halloween.png"
+  },
+  "Thanksgiving Day": {
+    "fg": "#963626",
+    "bg": "#C86820",
+    "image": "assets/images/thanksgiving.png"
+  },
+  "Christmas Day": {
+    "fg": "#FF0000",
+    "bg": "#006400",
+    "image": "assets/images/christmas.png"
+  },
+    "New Year's Day": {
+    "fg": "#CE9236",
+    "bg": "#000000",
+    "image": "assets/images/new_years.png"
+  },
+  "Ovi's Birthday": {
+    "fg": "#000000",
+    "bg": "#FFD166",
+    "image": "assets/images/birthday_ethan.png"
+  }
+}
