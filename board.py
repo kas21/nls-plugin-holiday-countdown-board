@@ -8,7 +8,7 @@ import logging
 import os
 from dataclasses import dataclass
 from datetime import date, timedelta
-from typing import Optional
+from typing import Dict, Optional
 
 from boards.base_board import BoardBase
 from data.data import Data
@@ -144,6 +144,9 @@ class HolidayCountdownBoard(BoardBase):
         # Image cache
         self._image_cache: dict[str, Image.Image] = {}
 
+        # Load image positioning offsets if they exist
+        self.image_offsets = self._load_image_offsets()
+
     def _get_board_directory(self):
         """Get the absolute path to this board's directory."""
         import inspect
@@ -202,10 +205,17 @@ class HolidayCountdownBoard(BoardBase):
                     if (self.rows < 64):
                         new_size = (32, 32)
                         img = img.resize(new_size)
-                    self.matrix.draw_image_layout(
-                        layout.holiday_image,
+                    self._draw_image(
+                        layout,
+                        "holiday_image",
                         img,
+                        name,
                     )
+                    #
+                    # self.matrix.draw_image_layout(
+                    #     layout.holiday_image,
+                    #     img,
+                    # )
 
             # Gradiant
             self.matrix.draw_image_layout(layout.gradiant, black_gradiant)
@@ -333,3 +343,105 @@ class HolidayCountdownBoard(BoardBase):
         except Exception as e:
             debug.error(f"Failed to load image {path}: {e}")
             return None
+
+    def _draw_image(self, layout, element_name: str, image: Image, holiday_name: str, canvas=None) -> None:
+        """
+        Draw a team logo using element-specific offsets.
+
+        Args:
+            layout: Layout object containing the image element
+            element_name: Name of the image element (also used as offset key)
+            image: PIL Image to draw
+            holiday_name: Holiday name for offset lookup
+            canvas: Optional canvas to draw on (defaults to main matrix)
+        """
+        if not hasattr(layout, element_name) or not image:
+            return
+
+        if not canvas:
+            canvas = self.matrix
+
+        # Use element_name as the offset key
+        offsets = self._get_image_offsets(holiday_name, element_name)
+
+        zoom = float(offsets.get("zoom", 1.0))
+        offset_x, offset_y = offsets.get("offset", (0, 0))
+
+        # Scale logo to appropriate size
+        max_dimension = 64 if self.matrix.height >= 48 else min(32, self.matrix.height)
+
+        if max(image.size) > max_dimension:
+            image.thumbnail((max_dimension, max_dimension), self._thumbnail_filter())
+
+        # Apply zoom if needed
+        if zoom != 1.0:
+            w, h = image.size
+            zoomed = image.resize(
+                (max(1, int(round(w * zoom))), max(1, int(round(h * zoom)))),
+                self._thumbnail_filter(),
+            )
+            image = zoomed
+
+        # Apply offset to layout element
+        element = getattr(layout, element_name).__copy__()
+        x, y = element.position
+        element.position = (x + offset_x, y + offset_y)
+
+        canvas.draw_image_layout(element, image)
+
+    @staticmethod
+    def _thumbnail_filter():
+        resampling = getattr(getattr(Image, "Resampling", Image), "LANCZOS", None)
+        if resampling is None:
+            resampling = getattr(Image, "LANCZOS", getattr(Image, "ANTIALIAS", Image.BICUBIC))
+        return resampling
+
+    def _get_image_offsets(self, holiday_name: str, element_name: str) -> dict:
+        """Get image offsets for a holiday and element, with fallback hierarchy."""
+        holiday_name_upper = holiday_name.upper()
+
+        # Try exact match first
+        holiday_offsets = self.image_offsets.get(holiday_name_upper)
+
+        # If no exact match, try partial matching (e.g., "THANKSGIVING" matches "THANKSGIVING DAY")
+        if not holiday_offsets:
+            for key in self.image_offsets.keys():
+                if key != "_default" and (key in holiday_name_upper or holiday_name_upper in key):
+                    holiday_offsets = self.image_offsets[key]
+                    break
+
+        if isinstance(holiday_offsets, dict):
+            # Check for element-specific offset
+            if element_name in holiday_offsets:
+                return holiday_offsets[element_name]
+            # Fall back to holiday default
+            if "_default" in holiday_offsets:
+                return holiday_offsets["_default"]
+
+        # Fall back to global default
+        return self.image_offsets.get("_default", {"zoom": 1.0, "offset": (0, 0)})
+
+    def _load_image_offsets(self) -> Dict[str, Dict[str, any]]:
+        """Load image positioning offsets from configuration file."""
+        try:
+            offsets_path = os.path.join(self._get_board_directory(), "image_offsets.json")
+
+            if os.path.exists(offsets_path):
+                with open(offsets_path) as file:
+                    raw_offsets = json.load(file)
+
+                # Process offsets with defaults
+                default_offset = raw_offsets.get("_default", {"zoom": 1.0, "offset": (0, 0)})
+                processed_offsets = {}
+
+                for key, value in raw_offsets.items():
+                    if key != "_default":
+                        processed_offsets[key.upper()] = {**default_offset, **value}
+
+                processed_offsets["_default"] = default_offset
+                return processed_offsets
+
+        except Exception as error:
+            debug.error(f"Holiday Board: Failed to load image offsets: {error}")
+
+        return {"_default": {"zoom": 1.0, "offset": (0, 0)}}

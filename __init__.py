@@ -17,3 +17,16 @@ __requirements__ = [
 
 # Minimum application version required
 __min_app_version__ = "2025.09.00"
+
+# Files to preserve during plugin updates/removals (optional)
+# The plugin manager will preserve these files when updating or removing with --keep-config
+# Supports glob patterns like *.csv, data/*, custom_*
+# Default if not specified: ["config.json", "*.csv", "data/*", "custom_*"]
+__preserve_files__ = [
+    "config.json",
+    "image_offsets.json",
+    "custom_holidays.csv",
+    # Add other user-modifiable files here, e.g.:
+    # "custom_data.csv",
+    # "data/*.json",
+]
