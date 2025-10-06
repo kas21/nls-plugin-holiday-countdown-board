@@ -190,6 +190,14 @@ class HolidayCountdownBoard(BoardBase):
                 days_til = "?"
             else:
                 days_til = (dt - self.today).days
+
+            # Todo: make this more robust.  If we want users to be able to change the text
+            # If 1 day until season, change "DAYS" to "DAY"
+            if days_til == 1:
+                days_til_text = "DAY TIL"
+            else:
+                days_til_text = "DAYS TIL"
+
             csv_meta = self._get_csv_meta(dt, name)
             theme = self._pick_theme(name, csv_meta)
 
@@ -227,7 +235,7 @@ class HolidayCountdownBoard(BoardBase):
             self.matrix.render()
             self.sleepEvent.wait(1)
 
-            self.matrix.draw_text_layout(layout.until_text, "DAYS TIL", fillColor=fg_rgb)
+            self.matrix.draw_text_layout(layout.until_text, days_til_text, fillColor=fg_rgb)
 
             self.matrix.render()
             self.sleepEvent.wait(1)
@@ -368,7 +376,7 @@ class HolidayCountdownBoard(BoardBase):
         offset_x, offset_y = offsets.get("offset", (0, 0))
 
         # Scale logo to appropriate size
-        max_dimension = 64 if self.matrix.height >= 48 else min(32, self.matrix.height)
+        max_dimension = 128 if self.matrix.height >= 48 else min(64, self.matrix.height)
 
         if max(image.size) > max_dimension:
             image.thumbnail((max_dimension, max_dimension), self._thumbnail_filter())
