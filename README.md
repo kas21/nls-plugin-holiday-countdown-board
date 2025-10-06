@@ -122,9 +122,29 @@ Our Anniversary,10-18,assets/images/anniversary.png,#FFB6C1,#000000
 
 ## Installation
 
-Use the NHL Led Scoreboard's plugin manager python script to install:
+1. Use the NHL Led Scoreboard's plugin manager python script to install:
 
-`python plugins.py add https://github.com/kas21/nls-plugin-holiday-countdown-board.git`
+   ```bash
+   python plugins.py add https://github.com/kas21/nls-plugin-holiday-countdown-board.git
+   ```
+
+2. Make sure the virtual environment for the scoreboard is activated:
+
+   ```bash
+   source /home/<pi_user>/nhlsb-venv/bin/activate
+   ```
+
+3. Check if the requirements needed for this board are already installed:
+
+   ```bash
+   pip list | grep holidays
+   ```
+
+4. If requirements are not met, install them:
+
+   ```bash
+   pip install -r src/boards/plugins/holiday_countdown_board/requirements.txt   
+   ```
 
 ---
 
