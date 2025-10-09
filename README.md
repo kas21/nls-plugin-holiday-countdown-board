@@ -170,6 +170,9 @@ cp custom_holidays_sample.csv custom_holidays.csv
 nano custom_holidays.csv
 ```
 
+[!WARNING]
+At this time, `assets/images` is not backedup/restored when the plugin updates.  Images and other files added to this directory will not be preserved.  Any files added to `data` in the root of the plugin folder (you will have to create the directory) will be preserved.  If you wish to add your own images for holidays, please add them here and reference them currectly in `custom_holidays.csv`
+
 **Note:** You must restart the scoreboard for changes to take effect.
 
 ---
