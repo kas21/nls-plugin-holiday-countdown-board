@@ -104,6 +104,8 @@ nano config.json
 - `display_seconds` → Seconds to display each holiday (default: 5)
 - `enabled` → Enable or disable the board (default: true)
 
+Detailed information regarding supported Country, Subdivision/State, and Category combinations can be found [in the `holiday` python library documentation](https://holidays.readthedocs.io/en/latest/#available-countries)
+
 ### Example Configuration
 
 ```json
