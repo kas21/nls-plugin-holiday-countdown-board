@@ -1,8 +1,10 @@
 # Holiday Countdown Board
 
-The **Holiday Countdown Board** displays upcoming holidays on an LED matrix with customizable colors and images.
+A **Holiday Countdown Board** for the [NHL LED Scoreboard](https://github.com/falkyre/nhl-led-scoreboard) that displays upcoming holidays with customizable colors and images.
 
 It is powered by the [Python `holidays` library](https://github.com/vacanza/holidays) and supports both official holidays and custom user-defined holidays (like birthdays or anniversaries).
+
+![Holiday Countdown Board 128x64](assets/screenshots/holiday_countdown_board_128.jpg)
 
 ## Table of Contents
 
