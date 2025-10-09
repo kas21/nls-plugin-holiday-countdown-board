@@ -4,6 +4,16 @@ The **Holiday Countdown Board** displays upcoming holidays on an LED matrix with
 
 It is powered by the [Python `holidays` library](https://github.com/vacanza/holidays) and supports both official holidays and custom user-defined holidays (like birthdays or anniversaries).
 
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Theming](#theming)
+- [Optional Customization](#optional-customization)
+- [How It Works](#how-it-works)
+- [Screenshots](#screenshots)
+
 ---
 
 ## Features
@@ -19,15 +29,72 @@ It is powered by the [Python `holidays` library](https://github.com/vacanza/holi
 
 ---
 
+## Installation
+
+1. Use the NHL Led Scoreboard's plugin manager python script to install:
+
+   ```bash
+   python plugins.py add https://github.com/kas21/nls-plugin-holiday-countdown-board.git
+   ```
+
+2. Make sure the virtual environment for the scoreboard is activated:
+
+   ```bash
+   source /home/<pi_user>/nhlsb-venv/bin/activate
+   ```
+
+3. Check if the requirements needed for this board are already installed:
+
+   ```bash
+   pip list | grep holidays
+   ```
+
+4. If requirements are not met, install them:
+
+   ```bash
+   pip install -r src/boards/plugins/holiday_countdown_board/requirements.txt
+   ```
+
+5. Add `holiday_countdown_board` to your NHL-LED-Scoreboard's main configuration:
+
+   ```bash
+   nano config/config.json
+   ```
+
+   For example, to add it to the off day rotation:
+
+   ```json
+   "states": {
+       "off_day": [
+           "season_countdown",
+           "holiday_countdown_board",
+           "team_summary",
+           "scoreticker",
+           "clock"
+       ]
+   }
+   ```
+
+   **Note:** You must restart the scoreboard for changes to take effect.
+
+---
+
 ## Configuration
 
-Add the board to your NLS configuration file with the following options:
+To customize the `holiday_countdown_board` configuration, copy the sample config to config.json and edit it.
+
+```bash
+cp config.sample.json config.json
+nano config.json
+```
+
+**Note:** You must restart the scoreboard for changes to take effect.
 
 ### Config Fields
 
 - `country_code` → Two-letter country code (e.g., `"US"`, `"CA"`, `"GB"`)
 - `subdiv` → Optional subdivision/state code (e.g., `"NY"`, `"CA"`)
-- `categories` → List of holiday categories to include: `"GOVERNMENT"`, `"PUBLIC"`, `"UNOFFICIAL"` (empty list shows all)
+- `categories` → List of holiday categories to include: `"GOVERNMENT"`, `"PUBLIC"`, `"UNOFFICIAL"`
 - `ignored_holidays` → List of holiday names to skip
 - `horizon_days` → How many days ahead to look for upcoming holidays (default: 90)
 - `themes_path` → Path to a JSON file defining holiday themes (default: `"holiday_themes.json"`)
@@ -41,7 +108,7 @@ Add the board to your NLS configuration file with the following options:
 {
     "country_code": "US",
     "subdiv": "NY",
-    "categories": [""],
+    "categories": ["UNOFFICIAL", "GOVERNMENT"],
     "ignored_holidays": [
         "Columbus Day",
         "Veterans Day"
@@ -53,8 +120,6 @@ Add the board to your NLS configuration file with the following options:
     "enabled": true
 }
 ```
-
-**Note:** Paths in the configuration are resolved relative to the board's directory unless absolute paths are provided.
   
 ---
 
@@ -93,58 +158,17 @@ Holiday appearance is controlled by a themes JSON file (default: `holiday_themes
 
 ---
 
-## Custom Holidays
+## Optional Customization
 
-You can add birthdays, anniversaries, or other non-official events via a CSV file (default: `custom_holidays.csv`).
+To customize the `holiday_countdown_board`, copy the sample files to create your own configuration:
 
-### CSV Format
-
-The CSV file should have the following columns:
-
-- `name` → Holiday name (required)
-- `date` → Date in `MM-DD` (recurring yearly) or `YYYY-MM-DD` (one-time) format (required)
-- `image` → Path to image file (optional, overrides theme)
-- `fg` → Foreground color hex code (optional, overrides theme)
-- `bg` → Background color hex code (optional, overrides theme)
-
-### Example `custom_holidays.csv`
-
-```csv
-name,date,image,fg,bg
-Ovi's Birthday,10-28,assets/images/birthday.png,#4DA6FF,#FFD166
-Connar's B-Day,12-01,assets/images/birthday.png,#4DA6FF,#FFD166
-Our Anniversary,10-18,assets/images/anniversary.png,#FFB6C1,#000000
+```bash
+cd src/boards/plugins/holiday_countdown_board
+cp custom_holidays_sample.csv custom_holidays.csv
+nano custom_holidays.csv
 ```
 
-**Note:** Custom holidays are merged with official holidays from the `holidays` library. If a custom holiday shares a date with an official one, both will be shown.
-
----
-
-## Installation
-
-1. Use the NHL Led Scoreboard's plugin manager python script to install:
-
-   ```bash
-   python plugins.py add https://github.com/kas21/nls-plugin-holiday-countdown-board.git
-   ```
-
-2. Make sure the virtual environment for the scoreboard is activated:
-
-   ```bash
-   source /home/<pi_user>/nhlsb-venv/bin/activate
-   ```
-
-3. Check if the requirements needed for this board are already installed:
-
-   ```bash
-   pip list | grep holidays
-   ```
-
-4. If requirements are not met, install them:
-
-   ```bash
-   pip install -r src/boards/plugins/holiday_countdown_board/requirements.txt   
-   ```
+**Note:** You must restart the scoreboard for changes to take effect.
 
 ---
 
@@ -161,4 +185,14 @@ Our Anniversary,10-18,assets/images/anniversary.png,#FFB6C1,#000000
    - Shows the holiday name
 5. Ignored holidays are skipped during rendering
 
-  
+---
+
+## Screenshots
+
+### 64x32 Display
+
+![Holiday Countdown Board 64x32](assets/screenshots/holiday_countdown_board_64.jpg)
+
+### 128x64 Display
+
+![Holiday Countdown Board 128x64](assets/screenshots/holiday_countdown_board_128.jpg)
