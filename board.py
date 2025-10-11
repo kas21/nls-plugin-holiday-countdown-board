@@ -88,6 +88,7 @@ def load_custom_holidays(csv_path: str, today: date) -> list[tuple[date, str, di
             "fg": (row.get("fg") or None),
             "bg": (row.get("bg") or None),
         }
+        debug.debug(f"Holiday Board: Loaded custom holiday '{name}' on {dt} with meta {meta}")
         out.append((dt, name, meta))
     return out
 
