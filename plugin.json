@@ -1,0 +1,26 @@
+{
+  "name": "holiday_countdown_board",
+  "version": "2025.10.01",
+  "description": "Holiday Countdown Board displays upcoming holidays with customizable themes",
+  "author": "kas",
+  "enabled": true,
+
+  "boards": [
+    {
+      "id": "holiday_countdown_board",
+      "class_name": "HolidayCountdownBoard",
+      "module": "board"
+    }
+  ],
+
+  "requirements": {
+    "app_version": ">=2025.10.01",
+    "python_dependencies": ["pillow", "holidays"]
+  },
+
+  "preserve_files": [
+    "config.json",
+    "image_offsets.json",
+    "custom_holidays.csv"
+  ]
+}

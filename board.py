@@ -7,7 +7,7 @@ import json
 import logging
 import os
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from typing import Dict, Optional
 
 from boards.base_board import BoardBase
@@ -49,10 +49,13 @@ def _read_custom_csv(path: str) -> list[dict]:
 
 def _parse_custom_date(token: str, today: date) -> date:
     # Supports YYYY-MM-DD or MM-DD (recurring next occurrence)
-    if len(token) == 10:
-        return datetime.strptime(token, "%Y-%m-%d").date()
-    mm, dd = map(int, token.split("-"))
-    candidate = date(today.year, mm, dd)
+    try:
+        if len(token) == 10:
+            return datetime.strptime(token, "%Y-%m-%d").date()
+        mm, dd = map(int, token.split("-"))
+        candidate = date(today.year, mm, dd)
+    except ValueError:
+        return None
     return candidate if candidate >= today else date(today.year + 1, mm, dd)
 
 def load_themes(themes_json_path: str) -> dict[str, HolidayTheme]:
@@ -77,11 +80,15 @@ def load_custom_holidays(csv_path: str, today: date) -> list[tuple[date, str, di
         if not name or not token:
             continue
         dt = _parse_custom_date(token, today)
+        if not dt:
+            debug.warning(f"Holiday Board: Skipping invalid custom date '{token}' for '{name}'")
+            continue
         meta = {
             "image": (row.get("image") or None),
             "fg": (row.get("fg") or None),
             "bg": (row.get("bg") or None),
         }
+        debug.debug(f"Holiday Board: Loaded custom holiday '{name}' on {dt} with meta {meta}")
         out.append((dt, name, meta))
     return out
 
