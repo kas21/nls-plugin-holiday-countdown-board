@@ -13,5 +13,6 @@
     "themes_path": "holiday_themes.json",
     "custom_holidays_path": "custom_holidays.csv",
     "display_seconds": 6,
+    "animation": true,
     "enabled": true
 }
