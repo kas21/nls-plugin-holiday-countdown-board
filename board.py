@@ -122,6 +122,7 @@ class HolidayCountdownBoard(BoardBase):
         self.ignored_holidays = self.board_config.get("ignored_holidays", "")
         self.horizon_days = self.board_config.get("horizon_days", 90)
         self.display_seconds = self.board_config.get("display_seconds", 5)
+        self.animation = self.board_config.get("animation", True)
 
         # Resolve paths relative to the plugin directory
         self.board_dir = self._get_board_directory()
@@ -237,20 +238,27 @@ class HolidayCountdownBoard(BoardBase):
 
             # Text
             fg_rgb = _hex_to_rgb(theme.fg)
-            self.matrix.draw_text_layout(layout.count_text, str(days_til), fillColor=fg_rgb)
 
-            self.matrix.render()
-            self.sleepEvent.wait(1)
+            if self.animation:
+                # Render one line at a time
+                self.matrix.draw_text_layout(layout.count_text, str(days_til), fillColor=fg_rgb)
+                self.matrix.render()
+                self.sleepEvent.wait(1)
 
-            self.matrix.draw_text_layout(layout.until_text, days_til_text, fillColor=fg_rgb)
+                self.matrix.draw_text_layout(layout.until_text, days_til_text, fillColor=fg_rgb)
+                self.matrix.render()
+                self.sleepEvent.wait(1)
 
-            self.matrix.render()
-            self.sleepEvent.wait(1)
-
-            self.matrix.draw_text_layout(layout.holiday_name_text, name.upper(), fillColor=fg_rgb)
-
-            self.matrix.render()
-            self.sleepEvent.wait(self.display_seconds)
+                self.matrix.draw_text_layout(layout.holiday_name_text, name.upper(), fillColor=fg_rgb)
+                self.matrix.render()
+                self.sleepEvent.wait(self.display_seconds)
+            else:
+                # Render all lines at once
+                self.matrix.draw_text_layout(layout.count_text, str(days_til), fillColor=fg_rgb)
+                self.matrix.draw_text_layout(layout.until_text, days_til_text, fillColor=fg_rgb)
+                self.matrix.draw_text_layout(layout.holiday_name_text, name.upper(), fillColor=fg_rgb)
+                self.matrix.render()
+                self.sleepEvent.wait(self.display_seconds)
 
     # -------- Data building --------
 

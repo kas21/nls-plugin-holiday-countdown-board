@@ -102,6 +102,7 @@ nano config.json
 - `themes_path` → Path to a JSON file defining holiday themes (default: `"holiday_themes.json"`)
 - `custom_holidays_path` → Path to a CSV file defining custom holidays (default: `"custom_holidays.csv"`)
 - `display_seconds` → Seconds to display each holiday (default: 5)
+- `animation` → Enable animated text reveal (true) or show all text at once (false) (default: true)
 - `enabled` → Enable or disable the board (default: true)
 
 Detailed information regarding supported Country, Subdivision/State, and Category combinations can be found [in the `holiday` python library documentation](https://holidays.readthedocs.io/en/latest/#available-countries)
@@ -121,6 +122,7 @@ Detailed information regarding supported Country, Subdivision/State, and Categor
     "themes_path": "holiday_themes.json",
     "custom_holidays_path": "custom_holidays.csv",
     "display_seconds": 6,
+    "animation": true,
     "enabled": true
 }
 ```
@@ -187,9 +189,9 @@ nano custom_holidays.csv
 4. For each holiday, the board:
    - Displays the holiday image (if configured)
    - Shows a gradient overlay
-   - Animates text showing days until the holiday
-   - Displays "DAYS TIL" text
-   - Shows the holiday name
+   - Renders text showing days until the holiday, "DAYS TIL" text, and holiday name
+   - If `animation` is enabled (true, default), display one line at a time
+   - If `animation` is disabled (false), displays all lines at once
 5. Ignored holidays are skipped during rendering
 
 ---
