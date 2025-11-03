@@ -4,7 +4,6 @@
     "categories": ["GOVERNMENT", "UNOFFICIAL"],
     "ignored_holidays": [
         "Columbus Day",
-        "Veterans Day",
         "Election Day",
         "Martin Luther King Jr. Day",
         "Birthday of Martin Luther King, Jr."
@@ -14,5 +13,6 @@
     "custom_holidays_path": "custom_holidays.csv",
     "display_seconds": 6,
     "animation": true,
+    "custom_holidays_only": false,
     "enabled": true
 }

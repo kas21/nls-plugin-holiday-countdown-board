@@ -7,14 +7,15 @@ import json
 import logging
 import os
 from dataclasses import dataclass
-from datetime import date, timedelta, datetime
+from datetime import date, datetime, timedelta
 from typing import Dict, Optional
 
-from boards.base_board import BoardBase
-from data.data import Data
 from holidays import country_holidays
 from holidays.constants import GOVERNMENT, PUBLIC, UNOFFICIAL
 from PIL import Image
+
+from boards.base_board import BoardBase
+from data.data import Data
 from renderer.matrix import Matrix
 
 from . import __board_name__, __description__, __version__
@@ -123,6 +124,7 @@ class HolidayCountdownBoard(BoardBase):
         self.horizon_days = self.board_config.get("horizon_days", 90)
         self.display_seconds = self.board_config.get("display_seconds", 5)
         self.animation = self.board_config.get("animation", True)
+        self.custom_holidays_only = self.board_config.get("custom_holidays_only", False)
 
         # Resolve paths relative to the plugin directory
         self.board_dir = self._get_board_directory()
@@ -263,12 +265,16 @@ class HolidayCountdownBoard(BoardBase):
     # -------- Data building --------
 
     def _compute_upcoming(self) -> list[tuple[date, str]]:
-        lib = self._upcoming_holidays_within(
-            country=self.country_code,
-            subdiv=self.subdiv,
-            horizon_days=self.horizon_days,
-            include_today=True,
-        )  # list[(date, name)]
+
+        lib = []
+        # from holidays library if not set to custom only
+        if not self.custom_holidays_only:
+            lib = self._upcoming_holidays_within(
+                country=self.country_code,
+                subdiv=self.subdiv,
+                horizon_days=self.horizon_days,
+                include_today=True,
+            )  # list[(date, name)]
 
         # from CSV
         custom = []
