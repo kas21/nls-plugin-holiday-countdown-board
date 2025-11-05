@@ -34,9 +34,14 @@
     "bg": "#000000",
     "image": "assets/images/new_years.png"
   },
-  "Ovi's Birthday": {
-    "fg": "#000000",
+  "Veterans Day": {
+    "fg": "#00ff00",
     "bg": "#FFD166",
-    "image": "assets/images/birthday_ethan.png"
+    "image": "assets/images/veterans_day.png"
+  },
+  "Groundhog Day": {
+    "fg": "#FFD700",
+    "bg": "#FFD166",
+    "image": "assets/images/groundhog_day.png"
   }
 }

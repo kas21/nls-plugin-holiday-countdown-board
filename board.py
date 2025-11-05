@@ -8,7 +8,7 @@ import logging
 import os
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 from holidays import country_holidays
 from holidays.constants import GOVERNMENT, PUBLIC, UNOFFICIAL
@@ -98,6 +98,35 @@ def _hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
     if len(h) == 3:
         h = "".join(ch * 2 for ch in h)
     return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
+
+def _calculate_time_until(target_date: date, current_time: datetime) -> Tuple[str, str]:
+    """
+    Calculate time until target date and return (count_text, unit_text).
+
+    Returns hours/minutes if < 24 hours away, otherwise days.
+    """
+    # Combine target date with midnight time
+    target_datetime = datetime.combine(target_date, datetime.min.time())
+    time_delta = target_datetime - current_time
+
+    # If it's today (same date)
+    if target_date == current_time.date():
+        return "0", "TODAY IS"
+
+    # If less than 24 hours away
+    total_seconds = time_delta.total_seconds()
+    if 0 < total_seconds < 86400:  # 86400 seconds = 24 hours
+        hours = int(total_seconds // 3600)
+        minutes = int((total_seconds % 3600) // 60)
+
+        if hours > 0:
+            return str(hours), "HOUR TIL" if hours == 1 else "HOURS TIL"
+        else:
+            return str(minutes), "MINUTE TIL" if minutes == 1 else "MINUTES TIL"
+
+    # Otherwise show days
+    days = time_delta.days
+    return str(days), "DAY TIL" if days == 1 else "DAYS TIL"
 
 
 # ---- Main class --------------------------------------------------------------
@@ -195,18 +224,9 @@ class HolidayCountdownBoard(BoardBase):
             debug.info(f"Rendering {name} board")
             self.matrix.clear()
 
-            if self.today is None:
-                debug.error("self.today is None, cannot compute days_til")
-                days_til = "?"
-            else:
-                days_til = (dt - self.today).days
-
-            # Todo: make this more robust.  If we want users to be able to change the text
-            # If 1 day until season, change "DAYS" to "DAY"
-            if days_til == 1:
-                days_til_text = "DAY TIL"
-            else:
-                days_til_text = "DAYS TIL"
+            # Calculate time until holiday (handles days, hours, minutes, and "today")
+            current_time = datetime.now()
+            count_text, unit_text = _calculate_time_until(dt, current_time)
 
             csv_meta = self._get_csv_meta(dt, name)
             theme = self._pick_theme(name, csv_meta)
@@ -243,11 +263,13 @@ class HolidayCountdownBoard(BoardBase):
 
             if self.animation:
                 # Render one line at a time
-                self.matrix.draw_text_layout(layout.count_text, str(days_til), fillColor=fg_rgb)
-                self.matrix.render()
-                self.sleepEvent.wait(1)
+                # For "TODAY IS", don't show the count (it's always 0)
+                if unit_text != "TODAY IS":
+                    self.matrix.draw_text_layout(layout.count_text, count_text, fillColor=fg_rgb)
+                    self.matrix.render()
+                    self.sleepEvent.wait(1)
 
-                self.matrix.draw_text_layout(layout.until_text, days_til_text, fillColor=fg_rgb)
+                self.matrix.draw_text_layout(layout.until_text, unit_text, fillColor=fg_rgb)
                 self.matrix.render()
                 self.sleepEvent.wait(1)
 
@@ -256,8 +278,10 @@ class HolidayCountdownBoard(BoardBase):
                 self.sleepEvent.wait(self.display_seconds)
             else:
                 # Render all lines at once
-                self.matrix.draw_text_layout(layout.count_text, str(days_til), fillColor=fg_rgb)
-                self.matrix.draw_text_layout(layout.until_text, days_til_text, fillColor=fg_rgb)
+                # For "TODAY IS", don't show the count (it's always 0)
+                if unit_text != "TODAY IS":
+                    self.matrix.draw_text_layout(layout.count_text, count_text, fillColor=fg_rgb)
+                self.matrix.draw_text_layout(layout.until_text, unit_text, fillColor=fg_rgb)
                 self.matrix.draw_text_layout(layout.holiday_name_text, name.upper(), fillColor=fg_rgb)
                 self.matrix.render()
                 self.sleepEvent.wait(self.display_seconds)
