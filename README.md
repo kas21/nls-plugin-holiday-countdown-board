@@ -6,6 +6,8 @@ It is powered by the [Python `holidays` library](https://github.com/vacanza/holi
 
 ![Holiday Countdown Board 128x64](assets/screenshots/holiday_countdown_board_128.jpg)
 
+<a href="https://www.buymeacoffee.com/kas21" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 ## Table of Contents
 
 - [Features](#features)
@@ -20,14 +22,19 @@ It is powered by the [Python `holidays` library](https://github.com/vacanza/holi
 
 ## Features
 
-- Displays days until the next holiday within a configurable horizon
+- Smart countdown display - Automatically switches between days, hours, and minutes based on proximity
+  - Shows days when 24+ hours away
+  - Shows hours when less than 24 hours away
+  - Shows minutes when less than 1 hour away
+  - Displays "TODAY IS" when the holiday arrives
 - Supports country/subdivision selection via the `holidays` library
 - Filter by holiday categories (GOVERNMENT, PUBLIC, UNOFFICIAL)
 - Ignore specific holidays you don't want to show
-- Add **custom holidays** (recurring or fixed-date)
-- Apply per-holiday **themes** (foreground color, background color, image)
+- Add custom holidays (recurring or fixed-date)
+- Custom holidays only mode - Display only your personal holidays without official holidays
+- Apply per-holiday themes (foreground color, background color, image)
 - Default theme fallback ensures all holidays have consistent styling
-- Animated display with gradual text reveal
+- Configurable animation - Choose between animated text reveal or instant display
 
 ---
 
@@ -39,25 +46,7 @@ It is powered by the [Python `holidays` library](https://github.com/vacanza/holi
    python plugins.py add https://github.com/kas21/nls-plugin-holiday-countdown-board.git
    ```
 
-2. Make sure the virtual environment for the scoreboard is activated:
-
-   ```bash
-   source /home/<pi_user>/nhlsb-venv/bin/activate
-   ```
-
-3. Check if the requirements needed for this board are already installed:
-
-   ```bash
-   pip list | grep holidays
-   ```
-
-4. If requirements are not met, install them:
-
-   ```bash
-   pip install -r src/boards/plugins/holiday_countdown_board/requirements.txt
-   ```
-
-5. Add `holiday_countdown_board` to your NHL-LED-Scoreboard's main configuration:
+2. Add `holiday_countdown_board` to your NHL-LED-Scoreboard's main configuration:
 
    ```bash
    nano config/config.json
@@ -103,6 +92,7 @@ nano config.json
 - `custom_holidays_path` → Path to a CSV file defining custom holidays (default: `"custom_holidays.csv"`)
 - `display_seconds` → Seconds to display each holiday (default: 5)
 - `animation` → Enable animated text reveal (true) or show all text at once (false) (default: true)
+- `custom_holidays_only` → Display only custom holidays from CSV, skip official holidays library (default: false)
 - `enabled` → Enable or disable the board (default: true)
 
 Detailed information regarding supported Country, Subdivision/State, and Category combinations can be found [in the `holiday` python library documentation](https://holidays.readthedocs.io/en/latest/#available-countries)
@@ -123,6 +113,7 @@ Detailed information regarding supported Country, Subdivision/State, and Categor
     "custom_holidays_path": "custom_holidays.csv",
     "display_seconds": 6,
     "animation": true,
+    "custom_holidays_only": false,
     "enabled": true
 }
 ```
@@ -174,8 +165,9 @@ cp custom_holidays_sample.csv custom_holidays.csv
 nano custom_holidays.csv
 ```
 
-:warning:
-**Important:** At this time, `assets/images` is not backedup/restored when the plugin updates.  Images and other files added to this directory will not be preserved.  Any files added to `data` in the root of the plugin folder (you will have to create the directory) will be preserved.  If you wish to add your own images for holidays, please add them here and reference them currectly in `custom_holidays.csv`
+### ⚠️ Important ⚠️
+
+At this time, `assets/images` is not backedup/restored when the plugin updates.  Images and other files added to this directory will not be preserved.
 
 **Note:** You must restart the scoreboard for changes to take effect.
 
@@ -183,16 +175,27 @@ nano custom_holidays.csv
 
 ## How It Works
 
-1. The board fetches official holidays from the `holidays` library based on your country and subdivision
+1. The board fetches official holidays from the `holidays` library based on your country and subdivision (unless `custom_holidays_only` is true)
 2. Custom holidays from the CSV file are loaded and merged with official holidays
 3. Holidays within the configured horizon are sorted by date
 4. For each holiday, the board:
+   - Calculates the time remaining and intelligently selects the display unit (days/hours/minutes or "TODAY IS")
    - Displays the holiday image (if configured)
    - Shows a gradient overlay
-   - Renders text showing days until the holiday, "DAYS TIL" text, and holiday name
-   - If `animation` is enabled (true, default), display one line at a time
+   - Renders text with the countdown and holiday name
+   - If `animation` is enabled (true, default), displays one line at a time
    - If `animation` is disabled (false), displays all lines at once
 5. Ignored holidays are skipped during rendering
+
+### Smart Countdown Examples
+
+As a holiday approaches, the display automatically adjusts:
+
+- **30 days away**: "30 DAYS TIL CHRISTMAS"
+- **3 days away**: "3 DAYS TIL CHRISTMAS"
+- **14 hours away**: "14 HOURS TIL CHRISTMAS"
+- **45 minutes away**: "45 MINUTES TIL CHRISTMAS"
+- **Holiday arrives**: "TODAY IS CHRISTMAS"
 
 ---
 
