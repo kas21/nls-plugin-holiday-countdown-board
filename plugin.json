@@ -1,6 +1,6 @@
 {
   "name": "holiday_countdown_board",
-  "version": "2025.11.03-beta",
+  "version": "2025.11.03",
   "description": "Holiday Countdown Board displays upcoming holidays with customizable themes",
   "author": "kas",
   "enabled": true,
