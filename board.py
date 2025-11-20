@@ -5,6 +5,7 @@ import csv
 import datetime
 import json
 import logging
+import math
 import os
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
@@ -124,8 +125,8 @@ def _calculate_time_until(target_date: date, current_time: datetime) -> Tuple[st
         else:
             return str(minutes), "MINUTE TIL" if minutes == 1 else "MINUTES TIL"
 
-    # Otherwise show days
-    days = time_delta.days
+    # Otherwise show days (round up to include partial days)
+    days = math.ceil(total_seconds / 86400)
     return str(days), "DAY TIL" if days == 1 else "DAYS TIL"
 
 
