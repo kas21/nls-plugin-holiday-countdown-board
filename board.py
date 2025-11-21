@@ -8,7 +8,7 @@ import logging
 import math
 import os
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from typing import Dict, Optional, Tuple
 
 from holidays import country_holidays
@@ -49,16 +49,33 @@ def _read_custom_csv(path: str) -> list[dict]:
     with open(path, newline="", encoding="utf-8") as f:
         return list(csv.DictReader(f))
 
-def _parse_custom_date(token: str, today: date) -> date:
+def _parse_custom_date(token: str, time_str: str | None, today: date) -> datetime | None:
     # Supports YYYY-MM-DD or MM-DD (recurring next occurrence)
+    # Optional time_str in HH:MM format (24-hour), defaults to midnight
     try:
         if len(token) == 10:
-            return datetime.strptime(token, "%Y-%m-%d").date()
-        mm, dd = map(int, token.split("-"))
-        candidate = date(today.year, mm, dd)
+            dt = datetime.strptime(token, "%Y-%m-%d").date()
+        else:
+            mm, dd = map(int, token.split("-"))
+            candidate = date(today.year, mm, dd)
+            dt = candidate if candidate >= today else date(today.year + 1, mm, dd)
     except ValueError:
         return None
-    return candidate if candidate >= today else date(today.year + 1, mm, dd)
+
+    # Parse optional time, default to midnight
+    target_time = datetime.min.time()
+    if time_str:
+        time_str = time_str.strip()
+        if time_str:
+            try:
+                parts = time_str.split(":")
+                hour = int(parts[0])
+                minute = int(parts[1]) if len(parts) > 1 else 0
+                target_time = time(hour, minute)
+            except (ValueError, IndexError):
+                debug.warning(f"Holiday Board: Invalid time format '{time_str}', using midnight")
+
+    return datetime.combine(dt, target_time)
 
 def load_themes(themes_json_path: str) -> dict[str, HolidayTheme]:
     raw = _read_json(themes_json_path)
@@ -74,14 +91,15 @@ def load_themes(themes_json_path: str) -> dict[str, HolidayTheme]:
     themes.setdefault("default", HolidayTheme("#FFFFFF", "#000000", None))
     return themes
 
-def load_custom_holidays(csv_path: str, today: date) -> list[tuple[date, str, dict]]:
-    out: list[tuple[date, str, dict]] = []
+def load_custom_holidays(csv_path: str, today: date) -> list[tuple[datetime, str, dict]]:
+    out: list[tuple[datetime, str, dict]] = []
     for row in _read_custom_csv(csv_path):
         name = (row.get("name") or "").strip()
         token = (row.get("date") or "").strip()  # "YYYY-MM-DD" or "MM-DD"
+        time_str = (row.get("time") or "").strip()  # "HH:MM" (optional)
         if not name or not token:
             continue
-        dt = _parse_custom_date(token, today)
+        dt = _parse_custom_date(token, time_str if time_str else None, today)
         if not dt:
             debug.warning(f"Holiday Board: Skipping invalid custom date '{token}' for '{name}'")
             continue
@@ -100,18 +118,16 @@ def _hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
         h = "".join(ch * 2 for ch in h)
     return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
 
-def _calculate_time_until(target_date: date, current_time: datetime) -> Tuple[str, str]:
+def _calculate_time_until(target_datetime: datetime, current_time: datetime) -> Tuple[str, str]:
     """
-    Calculate time until target date and return (count_text, unit_text).
+    Calculate time until target datetime and return (count_text, unit_text).
 
     Returns hours/minutes if < 24 hours away, otherwise days.
     """
-    # Combine target date with midnight time
-    target_datetime = datetime.combine(target_date, datetime.min.time())
     time_delta = target_datetime - current_time
 
-    # If it's today (same date)
-    if target_date == current_time.date():
+    # If target time has passed today or is right now
+    if time_delta.total_seconds() <= 0:
         return "0", "TODAY IS"
 
     # If less than 24 hours away
@@ -179,7 +195,7 @@ class HolidayCountdownBoard(BoardBase):
         self._last_computed_date = None
         self.today = None
         self.custom_rows = []
-        self.upcoming_holidays: list[tuple[date, str]] = []
+        self.upcoming_holidays: list[tuple[datetime, str]] = []
 
         # Image cache
         self._image_cache: dict[str, Image.Image] = {}
@@ -289,7 +305,7 @@ class HolidayCountdownBoard(BoardBase):
 
     # -------- Data building --------
 
-    def _compute_upcoming(self) -> list[tuple[date, str]]:
+    def _compute_upcoming(self) -> list[tuple[datetime, str]]:
 
         lib = []
         # from holidays library if not set to custom only
@@ -299,12 +315,13 @@ class HolidayCountdownBoard(BoardBase):
                 subdiv=self.subdiv,
                 horizon_days=self.horizon_days,
                 include_today=True,
-            )  # list[(date, name)]
+            )  # list[(datetime, name)]
 
         # from CSV
         custom = []
         for dt, name, _meta in self.custom_rows:
-            if 0 <= (dt - self.today).days <= self.horizon_days:
+            days_until = (dt.date() - self.today).days
+            if 0 <= days_until <= self.horizon_days:
                 custom.append((dt, name))
 
         merged = {(dt, name) for (dt, name) in lib} | {(dt, name) for (dt, name) in custom}
@@ -318,7 +335,7 @@ class HolidayCountdownBoard(BoardBase):
         start: date | None = None,
         horizon_days: int = 90,
         include_today: bool = True,
-    ) -> list[tuple[date, str]]:
+    ) -> list[tuple[datetime, str]]:
         if start is None:
             start = self.today
         if start is None:
@@ -346,11 +363,12 @@ class HolidayCountdownBoard(BoardBase):
             **kwargs
         )
 
-        results: list[tuple[date, str]] = []
+        results: list[tuple[datetime, str]] = []
         cursor = start
 
         if include_today and cursor in hdays:
-            results.append((cursor, hdays[cursor]))
+            # Library holidays default to midnight
+            results.append((datetime.combine(cursor, datetime.min.time()), hdays[cursor]))
             cursor = cursor + timedelta(days=1)
 
         while True:
@@ -359,7 +377,8 @@ class HolidayCountdownBoard(BoardBase):
                 break
             nxt_dt, nxt_name = nxt
             if (nxt_dt - start).days <= horizon_days:
-                results.append((nxt_dt, nxt_name))
+                # Library holidays default to midnight
+                results.append((datetime.combine(nxt_dt, datetime.min.time()), nxt_name))
                 cursor = nxt_dt + timedelta(days=1)
             else:
                 break
@@ -368,7 +387,7 @@ class HolidayCountdownBoard(BoardBase):
 
     # -------- Theme selection & assets --------
 
-    def _get_csv_meta(self, dt: date, name: str) -> dict | None:
+    def _get_csv_meta(self, dt: datetime, name: str) -> dict | None:
         norm = _normalize_name(name)
         for r_dt, r_name, meta in self.custom_rows:
             if r_dt == dt and _normalize_name(r_name) == norm:

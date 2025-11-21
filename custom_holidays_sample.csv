@@ -1,4 +1,5 @@
-name,date,image,fg,bg
-Ovi's Birthday,10-28,assets/images/birthday.png,#4DA6FF,#FFD166
-Connar's B-Day,12-01,assets/images/birthday.png,#4DA6FF,#FFD166
-Our Anniversary,10-18,assets/images/anniversary.png,#FFB6C1,#000000
+name,date,time,image,fg,bg
+Ovi's Birthday,10-28,,assets/images/birthday.png,#4DA6FF,#FFD166
+Connar's B-Day,12-01,,assets/images/birthday.png,#4DA6FF,#FFD166
+Our Anniversary,10-18,,assets/images/anniversary.png,#FFB6C1,#000000
+New Year Countdown,12-31,23:59,assets/images/fireworks.png,#FFD700,#000000
