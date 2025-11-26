@@ -2,7 +2,6 @@
 Holiday Countdown board module implementation.
 """
 import csv
-import datetime
 import json
 import logging
 import math
@@ -232,8 +231,6 @@ class HolidayCountdownBoard(BoardBase):
 
         layout = self.get_board_layout("holiday_countdown")
 
-        black_gradiant = Image.open(f'assets/images/{self.cols}x{self.rows}_scoreboard_center_gradient.png')
-
         for dt, name in self.upcoming_holidays:
 
             if name in self.ignored_holidays:
@@ -248,9 +245,9 @@ class HolidayCountdownBoard(BoardBase):
             csv_meta = self._get_csv_meta(dt, name)
             theme = self._pick_theme(name, csv_meta)
 
-            # Background - this looked bad so commenting out
-            # bg_rgb = _hex_to_rgb(theme.bg)
-            # self.matrix.draw_rectangle((0,0), (self.cols, self.rows), bg_rgb)
+            # Background
+            bg_rgb = _hex_to_rgb(theme.bg)
+            self.matrix.image.paste(bg_rgb, (0, 0, self.matrix.width, self.matrix.height))
 
             # Image
             if theme.image:
@@ -271,9 +268,6 @@ class HolidayCountdownBoard(BoardBase):
                     #     layout.holiday_image,
                     #     img,
                     # )
-
-            # Gradiant
-            self.matrix.draw_image_layout(layout.gradiant, black_gradiant)
 
             # Text
             fg_rgb = _hex_to_rgb(theme.fg)

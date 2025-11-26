@@ -6,12 +6,12 @@
   },
   "Valentine's Day": {
     "fg": "#FFB7C5",
-    "bg": "#A80030",
+    "bg": "#000000",
     "image": "assets/images/valentines.png"
   },
   "Saint Patrick's Day": {
     "fg": "#FFFFFF",
-    "bg": "#006400",
+    "bg": "#000000",
     "image": "assets/images/st_patrick.png"
   },
   "Halloween": {
@@ -21,12 +21,12 @@
   },
   "Thanksgiving Day": {
     "fg": "#963626",
-    "bg": "#C86820",
+    "bg": "#000000",
     "image": "assets/images/thanksgiving.png"
   },
   "Christmas Day": {
     "fg": "#FF0000",
-    "bg": "#006400",
+    "bg": "#000000",
     "image": "assets/images/christmas.png"
   },
     "New Year's Day": {
@@ -36,12 +36,12 @@
   },
   "Veterans Day": {
     "fg": "#00ff00",
-    "bg": "#FFD166",
+    "bg": "#000000",
     "image": "assets/images/veterans_day.png"
   },
   "Groundhog Day": {
     "fg": "#FFD700",
-    "bg": "#FFD166",
+    "bg": "#000000",
     "image": "assets/images/groundhog_day.png"
   }
 }

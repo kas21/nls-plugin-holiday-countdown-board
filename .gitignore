@@ -7,3 +7,6 @@ __pycache__/
 
 config.json
 custom_holidays.csv
+
+assets/data/*
+data/*
