@@ -12,7 +12,7 @@
   "Saint Patrick's Day": {
     "fg": "#FFFFFF",
     "bg": "#000000",
-    "image": "assets/images/st_patrick.png"
+    "image": "assets/images/leprechaun.png"
   },
   "Halloween": {
     "fg": "#FFA500",
